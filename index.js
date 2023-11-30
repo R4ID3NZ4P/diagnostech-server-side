@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SK);
 
 const port = process.env.PORT || 5000;
 
@@ -27,6 +28,7 @@ async function run() {
 
     const userCollection = client.db("diagnostechDB").collection("users");
     const testCollection = client.db("diagnostechDB").collection("tests");
+    const bookingCollection = client.db("diagnostechDB").collection("bookings");
 
     //users collection related APIs
     app.post("/users", async (req, res) => {
@@ -55,6 +57,26 @@ async function run() {
         const result = await testCollection.findOne(query);
         res.send(result);
     });
+
+    //payment
+    app.post("/payment-intent", async (req, res) => {
+      const {price} = req.body;
+      const amount = parseFloat(price) * 100;
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"]
+      });
+
+      res.send({ clientSecret: paymentIntent.client_secret});
+    });
+
+    app.post("/bookings", async (req, res) => {
+      const book = req.body;
+      const result = await bookingCollection.insertOne(book);
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
