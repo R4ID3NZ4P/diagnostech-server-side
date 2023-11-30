@@ -75,7 +75,11 @@ async function run() {
     app.post("/bookings", async (req, res) => {
       const book = req.body;
       const result = await bookingCollection.insertOne(book);
-      res.send(result);
+
+      const query = { _id: new ObjectId(book.service) };
+      const update = await testCollection.updateOne(query, {$inc : {slots: -1, booked: 1}});
+
+      res.send({result, update});
     })
 
 
