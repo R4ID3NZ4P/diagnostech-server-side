@@ -104,6 +104,12 @@ async function run() {
         res.send(result);
     });
 
+    app.post("/tests", verifyToken, async (req, res) => {
+      const test = req.body;
+      const result = await testCollection.insertOne(test);
+      res.send(result);
+    })
+
     //payment
     app.post("/payment-intent", async (req, res) => {
       const {price} = req.body;
