@@ -63,6 +63,26 @@ async function run() {
         res.send(result);
     });
 
+    app.get("/user/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = {email};
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/user", verifyToken, async (req, res) => {
+      const info = req.body;
+      const query = {email: info.email};
+      const updated = {
+        $set: {
+          name: info.name
+        }
+      };
+      const result = await userCollection.updateOne(query, updated);
+      res.send(result);
+    });
+
+
     app.get("/users/admin/:email", verifyToken, async (req, res) => {
       if(req.decoded.email !== req.params.email) {
         return res.status(403).send({message: "Forbidden access"});
@@ -106,6 +126,25 @@ async function run() {
       const update = await testCollection.updateOne(query, {$inc : {slots: -1, booked: 1}});
 
       res.send({result, update});
+    });
+
+    app.get("/results/:email", verifyToken, async (req, res) => {
+      const result = await bookingCollection.find({email: req.params.email}).toArray();
+      res.send(result);
+    });
+
+    app.get("/bookings/:email", verifyToken, async (req, res) => {
+      const result = await bookingCollection.find({email: req.params.email}).toArray();
+      const services = result.map(service => new ObjectId(service.service));
+      const bookings = await testCollection.find({_id : {$in: services}}).toArray();
+      res.send(bookings);
+    });
+
+    app.delete("/bookings/:id", verifyToken, async (req, res) => {
+      const query = {service: req.params.id};
+      const result = await bookingCollection.deleteMany(query);
+      const update = await testCollection.updateOne({_id: new ObjectId(req.params.id)}, {$inc : {slots: 1, booked: -1}});
+      res.send(result);
     })
 
 
