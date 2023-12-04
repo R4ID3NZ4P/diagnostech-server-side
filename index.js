@@ -75,6 +75,17 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/user/:email", verifyToken, async (req, res) => {
+      const info = req.body;
+      const query = {email: req.params.email};
+      const updated = {$set: {
+          status: info.status
+        }
+      };
+      const result = await userCollection.updateOne(query, updated);
+      res.send(result);
+    });
+
     app.patch("/user", verifyToken, async (req, res) => {
       const info = req.body;
       const query = {email: info.email};
@@ -90,7 +101,7 @@ async function run() {
     app.patch("/users/admin/:email", verifyToken, async (req, res) => {
       const query = {email: req.params.email};
       const updated = {$set: {
-        isAdmin: true
+          isAdmin: true
         }
       };
       const result = await userCollection.updateOne(query, updated);
