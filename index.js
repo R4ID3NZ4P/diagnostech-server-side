@@ -134,6 +134,20 @@ async function run() {
       const test = req.body;
       const result = await testCollection.insertOne(test);
       res.send(result);
+    });
+    
+    app.patch("/tests/:id", verifyToken, async (req, res) => {
+      const test = req.body;
+      const updated = {$set: test};
+      const query = {_id: new ObjectId(req.params.id)};
+      const result = await testCollection.updateOne(query, updated);
+      res.send(result);
+    });
+
+    app.delete("/tests/:id", verifyToken, async (req, res) => {
+      const query = {_id: new ObjectId(req.params.id)};
+      const result = await testCollection.deleteOne(query);
+      res.send(result);
     })
 
     //payment
