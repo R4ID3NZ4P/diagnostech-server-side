@@ -219,8 +219,13 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/banners", async (req, res) => {
+    app.get("/banners", verifyToken, async (req, res) => {
       const result = await bannerCollection.find().toArray();
+      res.send(result)
+    });
+
+    app.get("/banner", async (req, res) => {
+      const result = await bannerCollection.findOne({isActive: true});
       res.send(result)
     });
 
@@ -240,6 +245,12 @@ async function run() {
       const deactivated = await bannerCollection.updateMany({}, updatedAll);
       const active = await bannerCollection.updateOne(filter, updated);
       res.send(active);
+    });
+
+    app.delete("/banners/:id", verifyToken, async (req, res) => {
+      const query = {_id: new ObjectId(req.params.id)};
+      const result = await bannerCollection.deleteOne(query);
+      res.send(result);
     });
 
     // app.delete("/bookings/:id", verifyToken, async (req, res) => {
