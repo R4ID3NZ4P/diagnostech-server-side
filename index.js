@@ -54,6 +54,11 @@ async function run() {
     }
     
     //users collection related APIs
+    app.get("/users", verifyToken, async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
+
     app.post("/users", async (req, res) => {
         const userInfo = req.body;
         const query = {email: userInfo.email};
@@ -76,6 +81,16 @@ async function run() {
       const updated = {
         $set: {
           name: info.name
+        }
+      };
+      const result = await userCollection.updateOne(query, updated);
+      res.send(result);
+    });
+
+    app.patch("/users/admin/:email", verifyToken, async (req, res) => {
+      const query = {email: req.params.email};
+      const updated = {$set: {
+        isAdmin: true
         }
       };
       const result = await userCollection.updateOne(query, updated);
