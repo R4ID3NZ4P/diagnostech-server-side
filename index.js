@@ -186,12 +186,37 @@ async function run() {
       res.send(bookings);
     });
 
-    app.delete("/bookings/:id", verifyToken, async (req, res) => {
+    app.get("/reservations/:id", verifyToken, async (req, res) => {
       const query = {service: req.params.id};
-      const result = await bookingCollection.deleteMany(query);
-      const update = await testCollection.updateOne({_id: new ObjectId(req.params.id)}, {$inc : {slots: 1, booked: -1}});
+      console.log(query);
+      const result = await bookingCollection.find(query).toArray();
       res.send(result);
-    })
+    });
+
+    app.delete("/reservations", verifyToken, async (req, res) => {
+      const query = {service: req.query.service, email: req.query.email};
+      const result = await bookingCollection.deleteMany(query);
+      const update = await testCollection.updateOne({_id: new ObjectId(req.query.service)}, {$inc : {slots: 1, booked: -1}});
+      res.send(result);
+    });
+
+    app.patch("/reservations/:id", verifyToken, async (req, res) => {
+      const query = {_id: new ObjectId(req.params.id)};
+      const info = req.body;
+      const updated = {
+        $set: info
+      }
+      console.log(query, updated);
+      const result = await bookingCollection.updateOne(query, updated);
+      res.send(result);
+    });
+
+    // app.delete("/bookings/:id", verifyToken, async (req, res) => {
+    //   const query = {service: req.params.id};
+    //   const result = await bookingCollection.deleteMany(query);
+    //   const update = await testCollection.updateOne({_id: new ObjectId(req.params.id)}, {$inc : {slots: 1, booked: -1}});
+    //   res.send(result);
+    // })
 
 
     // Send a ping to confirm a successful connection
