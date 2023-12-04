@@ -30,6 +30,7 @@ async function run() {
     const bannerCollection = client.db("diagnostechDB").collection("banners");
     const testCollection = client.db("diagnostechDB").collection("tests");
     const bookingCollection = client.db("diagnostechDB").collection("bookings");
+    const recommendationCollection = client.db("diagnostechDB").collection("recommendations");
 
     //jwt
     app.post("/jwt", async (req, res) => {
@@ -252,6 +253,12 @@ async function run() {
       const result = await bannerCollection.deleteOne(query);
       res.send(result);
     });
+
+    //recommendations APIs
+    app.get("/recommendations", async (req, res) => {
+      const result = await recommendationCollection.find().toArray();
+      res.send(result);
+    })
 
     // app.delete("/bookings/:id", verifyToken, async (req, res) => {
     //   const query = {service: req.params.id};
