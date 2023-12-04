@@ -27,6 +27,7 @@ async function run() {
     //await client.connect();
 
     const userCollection = client.db("diagnostechDB").collection("users");
+    const bannerCollection = client.db("diagnostechDB").collection("banners");
     const testCollection = client.db("diagnostechDB").collection("tests");
     const bookingCollection = client.db("diagnostechDB").collection("bookings");
 
@@ -209,6 +210,36 @@ async function run() {
       console.log(query, updated);
       const result = await bookingCollection.updateOne(query, updated);
       res.send(result);
+    });
+
+    //Banner related APIs
+    app.post("/banners", verifyToken, async (req, res) => {
+      const info = req.body;
+      const result = await bannerCollection.insertOne(info);
+      res.send(result);
+    });
+
+    app.get("/banners", async (req, res) => {
+      const result = await bannerCollection.find().toArray();
+      res.send(result)
+    });
+
+    app.patch("/banners/:id", verifyToken, async (req, res) => {
+      const filter = {_id: new ObjectId(req.params.id)};
+      const updatedAll = {
+        $set: {
+          isActive: false
+        }
+      };
+      const updated = {
+        $set: {
+          isActive: true
+        }
+      };
+
+      const deactivated = await bannerCollection.updateMany({}, updatedAll);
+      const active = await bannerCollection.updateOne(filter, updated);
+      res.send(active);
     });
 
     // app.delete("/bookings/:id", verifyToken, async (req, res) => {
